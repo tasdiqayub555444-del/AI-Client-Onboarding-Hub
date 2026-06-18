@@ -1,0 +1,2318 @@
+{
+  "name": "Workflow A: Client Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "client-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a5115e66-5292-4a3c-b77c-aead31bd3dff",
+      "name": "Client Intake Form",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        304
+      ],
+      "webhookId": "bf13451b-091f-42d6-bca3-02384a20c125"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.company_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "id": "102ce260-4a43-4235-b7fa-1fec69ced71f"
+            },
+            {
+              "leftValue": "={{ $json.body.contact_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "id": "39dac4e7-7e71-4f98-97c3-c68b1ea2621d"
+            },
+            {
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "id": "516cc1bb-5424-431f-b3db-413dc106d753"
+            },
+            {
+              "leftValue": "={{ $json.body.requested_service }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "id": "be2118c2-719b-423a-8d1c-005236187834"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c32dfc71-dd73-4452-a42c-73e239b4b3c6",
+      "name": "Validate Required Fields",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblckrM7BPSc6i9rX",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblckrM7BPSc6i9rX"
+        },
+        "filterByFormula": "={{ \"{Email} = '\" + $json.body.email + \"'\" }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "id": "baec7f4c-6974-4efd-a90d-d5e114da575e",
+      "name": "Check Duplicate Email",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        400
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "status",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "message",
+              "name": "message",
+              "value": "Missing required fields: Company Name, Contact Name, Email, or Requested Services",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5c077ce3-946e-45c9-9f1a-f4273c06efc1",
+      "name": "Prepare Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "00510cc5-f02e-4666-9490-738d4aafca39",
+      "name": "Return Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        912,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "id": "21772e63-af5c-4f59-846a-53c03af81611"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2909be42-49ae-43c7-a1dc-d7a1acec7145",
+      "name": "Check If Duplicate Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        912,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "status",
+              "name": "status",
+              "value": "duplicate",
+              "type": "string"
+            },
+            {
+              "id": "message",
+              "name": "message",
+              "value": "Client already exists with this email address",
+              "type": "string"
+            },
+            {
+              "id": "client_id",
+              "name": "client_id",
+              "value": "={{ $json.fields[\"Client ID\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "525c8741-281b-4907-a9da-b3ea2d304321",
+              "name": "company_name",
+              "value": "={{ $('Client Intake Form').item.json.body.company_name }}",
+              "type": "string"
+            },
+            {
+              "id": "a0b6e808-3e8a-4c35-a526-5ea35a2babde",
+              "name": "email",
+              "value": "={{ $('Client Intake Form').item.json.body.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a477a0a1-5f0e-4b27-937f-c295f36ef3b7",
+      "name": "Prepare Duplicate Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLjZbQnMqmJpZEy",
+          "mode": "list",
+          "cachedResultName": "Activities",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblLjZbQnMqmJpZEy"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Activity Type": "Client Intake",
+            "Status": "Canceled",
+            "Notes": "={{ \"Duplicate submission attempt for email: \" + $(\"Client Intake Form\").item.json.body.email }}",
+            "Activity Name": "Duplicate Client Submission"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Activity Name",
+              "displayName": "Activity Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Client",
+              "displayName": "Client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Activity Type",
+              "displayName": "Activity Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Call",
+                  "value": "Call"
+                },
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Meeting",
+                  "value": "Meeting"
+                },
+                {
+                  "name": "Task",
+                  "value": "Task"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                },
+                {
+                  "name": "Client Intake",
+                  "value": "Client Intake"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Planned",
+                  "value": "Planned"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                },
+                {
+                  "name": "Canceled",
+                  "value": "Canceled"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachments",
+              "displayName": "Attachments",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "AI Activity Summary",
+              "displayName": "AI Activity Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Sentiment Analysis",
+              "displayName": "AI Sentiment Analysis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Projects",
+              "displayName": "Projects",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "1dbc7a2c-ea63-449e-8eb8-77c81c84ec37",
+      "name": "Log Duplicate Activity",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        304
+      ],
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": $(\"Prepare Duplicate Response\").item.json.status, \"message\": $(\"Prepare Duplicate Response\").item.json.message, \"client_id\": $(\"Prepare Duplicate Response\").item.json.client_id } }}",
+        "options": {
+          "responseCode": 409
+        }
+      },
+      "id": "e7d67fb2-19d6-4ba2-9a5e-bc75dbe7a57c",
+      "name": "Return Duplicate Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1584,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('Client Intake Form').first().json.body;\n\n// Generate Client ID\nconst timestamp = Date.now();\nconst randomNum = Math.floor(Math.random() * 10000);\nconst clientNumber = String((timestamp % 10000) + randomNum).padStart(4, \"0\");\n\nreturn [{\n  json: {\n    clientId: `CLIENT-${clientNumber}`,\n\n    // Fixed field mappings (snake_case from webhook)\n    companyName: webhookData.company_name || \"\",\n    contactName: webhookData.contact_name || \"\",\n    email: webhookData.email || \"\",\n    phone: webhookData.phone || \"\",\n    industry: webhookData.industry || \"\",\n   budget: Number(webhookData.budget_usd || 0),\n    requestedService: webhookData.requested_service || \"\",\n    projectDescription: webhookData.project_description || \"\",\n\n    // Optional fields\n    priority: webhookData.priority || \"\",\n    riskLevel: webhookData.risk_level || \"\",\n\n    status: \"New\"\n  }\n}];"
+      },
+      "id": "68c60385-e001-4b56-b087-00db5a04dec7",
+      "name": "Generate Client ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblckrM7BPSc6i9rX",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblckrM7BPSc6i9rX"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Client ID": "={{ $json.clientId }}",
+            "Company Name": "={{ $json.companyName }}",
+            "Contact Name": "={{ $json.contactName }}",
+            "Email": "={{ $json.email }}",
+            "Phone": "={{ $json.phone }}",
+            "Industry": "={{ $json.industry }}",
+            "Status": "New",
+            "Created Date": "={{ $json.createdDate }}",
+            "Budget (USD)": "={{ $json.budget }}",
+            "Requested Service": "={{ $json.requestedService }}",
+            "Project Description": "={{ $json.projectDescription }}",
+            "Priority": "={{ $json.priority }}",
+            "Risk Level": "={{ $json.riskLevel }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Contact Name",
+              "displayName": "Contact Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Budget (USD)",
+              "displayName": "Budget (USD)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Requested Service",
+              "displayName": "Requested Service",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Project Description",
+              "displayName": "Project Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Risk Level",
+              "displayName": "Risk Level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned Team",
+              "displayName": "Assigned Team",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Client ID",
+              "displayName": "Client ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created Date",
+              "displayName": "Created Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Activities",
+              "displayName": "Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Projects",
+              "displayName": "Projects",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "56f6cc03-0616-4542-bcca-f24d83696d52",
+      "name": "Create Client Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        496
+      ],
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLjZbQnMqmJpZEy",
+          "mode": "list",
+          "cachedResultName": "Activities",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblLjZbQnMqmJpZEy"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Activity Type": "Client Intake",
+            "Status": "Completed",
+            "Notes": "={{ \"New client created: \" + $(\"Generate Client ID\").item.json.companyName }}",
+            "Client": "={{ [$items(\"Create Client Record\")[0].json.id] }}",
+            "Activity Name": "Client Intake",
+            "Assigned To": "={{ [$('Search Team Members').first().json.id] }}",
+            "Projects": "={{ [$('Create a project record').first().json.id] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Activity Name",
+              "displayName": "Activity Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Client",
+              "displayName": "Client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Activity Type",
+              "displayName": "Activity Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Call",
+                  "value": "Call"
+                },
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Meeting",
+                  "value": "Meeting"
+                },
+                {
+                  "name": "Task",
+                  "value": "Task"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                },
+                {
+                  "name": "Client Intake",
+                  "value": "Client Intake"
+                },
+                {
+                  "name": "Project Assignment",
+                  "value": "Project Assignment"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Member Name (from Assigned To)",
+              "displayName": "Member Name (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Level (from Assigned To)",
+              "displayName": "Level (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Email (from Assigned To)",
+              "displayName": "Email (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Status (from Assigned To)",
+              "displayName": "Status (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Planned",
+                  "value": "Planned"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                },
+                {
+                  "name": "Canceled",
+                  "value": "Canceled"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachments",
+              "displayName": "Attachments",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Activity Summary",
+              "displayName": "AI Activity Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "AI Sentiment Analysis",
+              "displayName": "AI Sentiment Analysis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Projects",
+              "displayName": "Projects",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "723d48f7-7d25-4f4d-9eb6-9d435e88d785",
+      "name": "Create Activity Log",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        3152,
+        496
+      ],
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "status",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "message",
+              "name": "message",
+              "value": "Client and project created successfully",
+              "type": "string"
+            },
+            {
+              "id": "client_id",
+              "name": "client_id",
+              "value": "={{ $(\"Generate Client ID\").item.json.clientId }}",
+              "type": "string"
+            },
+            {
+              "id": "company_name",
+              "name": "company_name",
+              "value": "={{ $(\"Generate Client ID\").item.json.companyName }}",
+              "type": "string"
+            },
+            {
+              "id": "contact_name",
+              "name": "contact_name",
+              "value": "={{ $(\"Generate Client ID\").item.json.contactName }}",
+              "type": "string"
+            },
+            {
+              "id": "email",
+              "name": "email",
+              "value": "={{ $(\"Generate Client ID\").item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "a327e433-27ca-41cd-85c6-d11074b8b551",
+              "name": "project_id",
+              "value": "={{ $(\"Generate Project ID\").item.json.projectId }}",
+              "type": "string"
+            },
+            {
+              "id": "48caacfb-ac8c-447d-a0a3-b769b3dfc570",
+              "name": "Budget",
+              "value": "={{ $('Assign Team Member To Project').item.json.fields['Budget (USD)'] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5d227087-17ef-425d-b176-0b49999f4160",
+      "name": "Prepare Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3376,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": $json.status, \"message\": $json.message, \"client_id\": $json.client_id, \"company_name\": $json.company_name } }}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "id": "aff6004c-c8dc-4021-a1e1-88d221827f36",
+      "name": "Return Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3584,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const timestamp = Date.now();\nconst randomNum = Math.floor(Math.random() * 10000);\n\nconst projectNumber = String(\n  (timestamp % 10000) + randomNum\n).padStart(4, \"0\");\n\nreturn [{\n  json: {\n    ...$input.first().json,\n    projectId: `PROJ-${projectNumber}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        496
+      ],
+      "id": "d1e97a9c-d14c-42c7-a240-c2841a2ff6f9",
+      "name": "Generate Project ID"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblCYBpU2NFTAlSeb",
+          "mode": "list",
+          "cachedResultName": "Projects",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblCYBpU2NFTAlSeb"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Project Name": "={{\n$('Generate Client ID').item.json.requestedService\n+\n' - '\n+\n$('Generate Client ID').item.json.companyName\n}}",
+            "Project ID": "={{ $(\"Generate Project ID\").item.json.projectId }}",
+            "Client": "={{ [$(\"Create Client Record\").item.json.id] }}",
+            "Status": "Not Started",
+            "Budget (USD)": "={{ $(\"Generate Client ID\").item.json.budget }}",
+            "Project Description": "={{ $(\"Generate Client ID\").item.json.projectDescription }}",
+            "Priority": "={{ $('Determine Complexity').item.json.priority }}",
+            "Risk Level": "={{ $('Determine Complexity').item.json.riskLevel }}",
+            "Team": "Operations",
+            "Complexity": "={{ $json.complexity }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Project ID",
+              "displayName": "Project ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Client",
+              "displayName": "Client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Start Date",
+              "displayName": "Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "End Date",
+              "displayName": "End Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not Started",
+                  "value": "Not Started"
+                },
+                {
+                  "name": "In Progress",
+                  "value": "In Progress"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                },
+                {
+                  "name": "On Hold",
+                  "value": "On Hold"
+                },
+                {
+                  "name": "Canceled",
+                  "value": "Canceled"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Project Manager",
+              "displayName": "Project Manager",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Budget (USD)",
+              "displayName": "Budget (USD)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Project Description",
+              "displayName": "Project Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Critical",
+                  "value": "Critical"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Risk Level",
+              "displayName": "Risk Level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Associated Activities",
+              "displayName": "Associated Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created Date",
+              "displayName": "Created Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Team",
+              "displayName": "Team",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Operations",
+                  "value": "Operations"
+                },
+                {
+                  "name": "Sales",
+                  "value": "Sales"
+                },
+                {
+                  "name": "Growth",
+                  "value": "Growth"
+                },
+                {
+                  "name": "Support",
+                  "value": "Support"
+                },
+                {
+                  "name": "Senior Team",
+                  "value": "Senior Team"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Complexity",
+              "displayName": "Complexity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "Low",
+                  "value": "Low"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Team Members",
+              "displayName": "Team Members",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2064,
+        496
+      ],
+      "id": "12ad1ae8-4a25-4371-998c-7be0301f4ed0",
+      "name": "Create a project record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const budget = Number($json.fields[\"Budget (USD)\"] || 0);\n\nlet complexity = \"\";\nlet requiredLevel = \"\";\nlet riskLevel = \"\";\nlet priority = \"\";\n\nif (budget < 25000) {\n  complexity = \"Low\";\n  requiredLevel = \"Junior\";\n  riskLevel = \"Low\";\n  priority = \"Low\";\n} \nelse if (budget < 75000) {\n  complexity = \"Medium\";\n  requiredLevel = \"Engineer\";\n  riskLevel = \"Medium\";\n  priority = \"High\";\n} \nelse {\n  complexity = \"High\";\n  requiredLevel = \"Senior\";\n  riskLevel = \"High\";\n  priority = \"Critical\";\n}\n\nreturn [\n  {\n    json: {\n      ...$json,\n      budget,\n      complexity,\n      requiredLevel,\n      riskLevel,\n      priority\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        496
+      ],
+      "id": "870f9b6d-30f0-4eb4-a87e-d974c9c9a239",
+      "name": "Determine Complexity"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrs7cJbnu9D55ZF",
+          "mode": "list",
+          "cachedResultName": "Team Members",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblrs7cJbnu9D55ZF"
+        },
+        "filterByFormula": "=={{`AND({Level}='${$node[\"Determine Complexity\"].json.requiredLevel}',{Status}='Available')`}}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        496
+      ],
+      "id": "0c7f0a8e-4765-454d-be09-a5e4c7663fcf",
+      "name": "Search Team Members",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblCYBpU2NFTAlSeb",
+          "mode": "list",
+          "cachedResultName": "Projects",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblCYBpU2NFTAlSeb"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Create a project record').first().json.id }}",
+            "Team Members": "={{ [$('Search Team Members').first().json.id] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Project ID",
+              "displayName": "Project ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Client",
+              "displayName": "Client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Start Date",
+              "displayName": "Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "End Date",
+              "displayName": "End Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not Started",
+                  "value": "Not Started"
+                },
+                {
+                  "name": "In Progress",
+                  "value": "In Progress"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                },
+                {
+                  "name": "On Hold",
+                  "value": "On Hold"
+                },
+                {
+                  "name": "Canceled",
+                  "value": "Canceled"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Project Manager",
+              "displayName": "Project Manager",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Budget (USD)",
+              "displayName": "Budget (USD)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Project Description",
+              "displayName": "Project Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Critical",
+                  "value": "Critical"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Risk Level",
+              "displayName": "Risk Level",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Low",
+                  "value": "Low"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "High",
+                  "value": "High"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Associated Activities",
+              "displayName": "Associated Activities",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created Date",
+              "displayName": "Created Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Team",
+              "displayName": "Team",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Operations",
+                  "value": "Operations"
+                },
+                {
+                  "name": "Sales",
+                  "value": "Sales"
+                },
+                {
+                  "name": "Growth",
+                  "value": "Growth"
+                },
+                {
+                  "name": "Support",
+                  "value": "Support"
+                },
+                {
+                  "name": "Senior Team",
+                  "value": "Senior Team"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Complexity",
+              "displayName": "Complexity",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "High",
+                  "value": "High"
+                },
+                {
+                  "name": "Medium",
+                  "value": "Medium"
+                },
+                {
+                  "name": "Low",
+                  "value": "Low"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Team Members",
+              "displayName": "Team Members",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2768,
+        496
+      ],
+      "id": "735ccd40-027a-4595-bd0b-5a700cc2f09a",
+      "name": "Assign Team Member To Project",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "apph4rKtqSN7R1VQ4",
+          "mode": "list",
+          "cachedResultName": "AI Client Onboarding Hub",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblLjZbQnMqmJpZEy",
+          "mode": "list",
+          "cachedResultName": "Activities",
+          "cachedResultUrl": "https://airtable.com/apph4rKtqSN7R1VQ4/tblLjZbQnMqmJpZEy"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Activity Name": "Project Assignment",
+            "Client": "={{ $('Create a project record').item.json.fields.Client }}",
+            "Activity Type": "Project Assignment",
+            "Notes": "={{\n\"Project \"\n+\n$('Create a project record').item.json.fields[\"Project Name\"]\n+\n\" assigned to \"\n+\n$('Search Team Members').item.json.fields[\"Member Name\"]\n}}",
+            "Assigned To": "={{ [$('Search Team Members').item.json.id] }}",
+            "Status": "Completed",
+            "Projects": "={{ [ $('Create a project record').item.json.id ] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Activity Name",
+              "displayName": "Activity Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Client",
+              "displayName": "Client",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Activity Type",
+              "displayName": "Activity Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Call",
+                  "value": "Call"
+                },
+                {
+                  "name": "Email",
+                  "value": "Email"
+                },
+                {
+                  "name": "Meeting",
+                  "value": "Meeting"
+                },
+                {
+                  "name": "Task",
+                  "value": "Task"
+                },
+                {
+                  "name": "Other",
+                  "value": "Other"
+                },
+                {
+                  "name": "Client Intake",
+                  "value": "Client Intake"
+                },
+                {
+                  "name": "Project Assignment",
+                  "value": "Project Assignment"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Member Name (from Assigned To)",
+              "displayName": "Member Name (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Level (from Assigned To)",
+              "displayName": "Level (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Email (from Assigned To)",
+              "displayName": "Email (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Status (from Assigned To)",
+              "displayName": "Status (from Assigned To)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Planned",
+                  "value": "Planned"
+                },
+                {
+                  "name": "Completed",
+                  "value": "Completed"
+                },
+                {
+                  "name": "Canceled",
+                  "value": "Canceled"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachments",
+              "displayName": "Attachments",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "AI Activity Summary",
+              "displayName": "AI Activity Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "AI Sentiment Analysis",
+              "displayName": "AI Sentiment Analysis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Projects",
+              "displayName": "Projects",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2944,
+        496
+      ],
+      "id": "1013d86c-cb3b-47a2-a8c7-da37c4a511a9",
+      "name": "Create Assignment Activity",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "WQobGxiVEShPWU8r",
+          "name": "Airtable OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2432,
+        256
+      ],
+      "id": "21e41821-a218-4d7e-a130-665b64be1fcc",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Client Intake Form": {
+      "main": [
+        [
+          {
+            "node": "Validate Required Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Required Fields": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate Email": {
+      "main": [
+        [
+          {
+            "node": "Check If Duplicate Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Duplicate Exists": {
+      "main": [
+        [
+          {
+            "node": "Prepare Duplicate Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Client ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Duplicate Response": {
+      "main": [
+        [
+          {
+            "node": "Log Duplicate Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Duplicate Activity": {
+      "main": [
+        [
+          {
+            "node": "Return Duplicate Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Client ID": {
+      "main": [
+        [
+          {
+            "node": "Create Client Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Client Record": {
+      "main": [
+        [
+          {
+            "node": "Generate Project ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Activity Log": {
+      "main": [
+        [
+          {
+            "node": "Prepare Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Success Response": {
+      "main": [
+        [
+          {
+            "node": "Return Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Project ID": {
+      "main": [
+        [
+          {
+            "node": "Determine Complexity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a project record": {
+      "main": [
+        [
+          {
+            "node": "Search Team Members",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Complexity": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a project record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Team Members": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Assign Team Member To Project": {
+      "main": [
+        [
+          {
+            "node": "Create Assignment Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Assignment Activity": {
+      "main": [
+        [
+          {
+            "node": "Create Activity Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Success Response": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Assign Team Member To Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f6110e38-1791-4d3d-892b-58ddc75c4af3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7f0d5dd822bb01f93fd4ed20ac8536380843dd878cc945df03cd2c1d289d6355"
+  },
+  "nodeGroups": [],
+  "id": "Lxt4cqmEAsvYIivu",
+  "tags": []
+}
